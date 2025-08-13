@@ -32,6 +32,14 @@ const index = () => {
 
   const handleChangeCategory = (category) => {
     setActiveCategory(category);
+    clearSearh();
+    setImages([]);
+    page = 1;
+    let params = {
+      page,
+    };
+    if (category) params.category = category;
+    fetchImages(params, false);
   };
   useEffect(() => {
     fetchImages();
@@ -49,9 +57,22 @@ const index = () => {
   const handleSearch = (text) => {
     setSearch(text);
     if (text.length > 2) {
+      page = 1;
       setImages([]);
+      setActiveCategory(null);
+      fetchImages({ page, q: text }, false);
     }
-    console.log(text);
+    if (text == "") {
+      (page = 1),
+        searchInputRef?.current.clear(),
+        setImages([]),
+        setActiveCategory(null);
+      fetchImages({ page }, false);
+    }
+  };
+  const clearSearh = () => {
+    setSearch("");
+    searchInputRef?.current.clear();
   };
   const handleDebounce = useCallback(debounce(handleSearch, 400), []);
   return (
@@ -92,7 +113,10 @@ const index = () => {
             ref={searchInputRef}
           />
           {search && (
-            <Pressable style={styles.closeIcon} onPress={() => setSearch("")}>
+            <Pressable
+              style={styles.closeIcon}
+              onPress={() => handleSearch("")}
+            >
               <Ionicons name="close" size={24} color={"rgba(10,10,10,0.5)"} />
             </Pressable>
           )}

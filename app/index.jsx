@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     marginBottom: 30,
     borderRadius: 15,
     borderCurve: "continuous",
-    width: 350,
+    width: 325,
   },
   pressableText: {
     color: "white",
