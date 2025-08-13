@@ -64,7 +64,7 @@ const index = () => {
         >
           <Pressable
             style={styles.pressable}
-            onPress={() => router.push("/homescreen")}
+            onPress={() => router.push("home")}
           >
             <Text style={styles.pressableText}>Start Exploring</Text>
           </Pressable>
@@ -116,8 +116,8 @@ const styles = StyleSheet.create({
     padding: 15,
     marginBottom: 30,
     borderRadius: 15,
-    width: "90%",
     borderCurve: "continuous",
+    width: 350,
   },
   pressableText: {
     color: "white",

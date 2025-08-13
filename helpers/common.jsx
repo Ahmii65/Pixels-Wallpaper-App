@@ -1,5 +1,7 @@
 import { Dimensions } from "react-native";
 
+const { width: windowWidth } = Dimensions.get("window");
+
 const { width: deviceWidth, height: deviceHeight } = Dimensions.get("screen");
 
 export const wp = (percentage) => {
@@ -9,4 +11,16 @@ export const wp = (percentage) => {
 export const hp = (percentage) => {
   const height = deviceHeight;
   return (percentage * height) / 100;
+};
+
+export const getImageSize = (height, width) => {
+  if (width > height) return 250;
+  else if (width < height) return 300;
+  else return 200;
+};
+
+export const getColumnCount = () => {
+  if (windowWidth >= 1024) return 4;
+  else if (windowWidth >= 768) return 3;
+  else return 2;
 };
