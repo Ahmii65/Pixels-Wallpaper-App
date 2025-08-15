@@ -18,6 +18,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { apicall } from "../../api";
 import Categories from "../../components/categories";
+import FilterModal from "../../components/filterModal";
 import ImagesGrid from "../../components/imagesGrid";
 
 var page = 1;
@@ -28,7 +29,9 @@ const index = () => {
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState(null);
   const [images, setImages] = useState([]);
+  const [filters, setFilters] = useState(null);
   const searchInputRef = useRef(null);
+  const filterModalRef = useRef(null);
 
   const handleChangeCategory = (category) => {
     setActiveCategory(category);
@@ -74,6 +77,22 @@ const index = () => {
     setSearch("");
     searchInputRef?.current.clear();
   };
+  const openModal = () => {
+    filterModalRef?.current.present();
+  };
+  const CloseModal = () => {
+    filterModalRef?.current.close();
+  };
+  const resetFilters = () => {
+    console.log("applying Filters");
+    setFilters(null);
+    CloseModal();
+  };
+  const applyFilters = () => {
+    console.log(`resting filters`);
+    setFilters(null);
+    CloseModal();
+  };
   const handleDebounce = useCallback(debounce(handleSearch, 400), []);
   return (
     <View
@@ -90,7 +109,7 @@ const index = () => {
         <Pressable>
           <Text style={styles.title}>Pixels</Text>
         </Pressable>
-        <Pressable>
+        <Pressable onPress={openModal}>
           <FontAwesome6
             name="bars-staggered"
             size={22}
@@ -129,6 +148,14 @@ const index = () => {
         </View>
         {images.length > 0 && <ImagesGrid images={images} />}
       </ScrollView>
+      <FilterModal
+        filterModalRef={filterModalRef}
+        filters={filters}
+        setFilters={setFilters}
+        onReset={resetFilters}
+        onApply={applyFilters}
+        onClose={CloseModal}
+      />
     </View>
   );
 };
