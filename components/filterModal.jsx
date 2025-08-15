@@ -5,6 +5,7 @@ import { useMemo } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, {
   Extrapolation,
+  FadeInDown,
   interpolate,
   useAnimatedStyle,
 } from "react-native-reanimated";
@@ -42,7 +43,12 @@ const FilterModal = ({
             let title = capitalize(sectionName);
             title = startCase(title);
             return (
-              <View key={index}>
+              <Animated.View
+                entering={FadeInDown.delay(index * 100 + 100)
+                  .springify()
+                  .damping(11)}
+                key={index}
+              >
                 <SectionView
                   title={title}
                   content={sectionView({
@@ -52,19 +58,22 @@ const FilterModal = ({
                     filterName: sectionName,
                   })}
                 />
-              </View>
+              </Animated.View>
             );
           })}
           {/* Buttons */}
 
-          <View style={styles.ButtonsContainer}>
+          <Animated.View
+            entering={FadeInDown.delay(500).springify().damping(11)}
+            style={styles.ButtonsContainer}
+          >
             <Pressable style={styles.Reset} onPress={onReset}>
               <Text style={styles.resetText}>Reset</Text>
             </Pressable>
             <Pressable style={styles.Apply} onPress={onApply}>
               <Text style={styles.applyText}>Apply</Text>
             </Pressable>
-          </View>
+          </Animated.View>
         </View>
       </BottomSheetView>
     </BottomSheetModal>

@@ -33,6 +33,7 @@ const index = () => {
   const [filters, setFilters] = useState(null);
   const searchInputRef = useRef(null);
   const filterModalRef = useRef(null);
+  const scrollRef = useRef(null);
 
   const handleChangeCategory = (category) => {
     setActiveCategory(category);
@@ -137,6 +138,12 @@ const index = () => {
     }
     fetchImages(params, false);
   };
+  const scrollToTop = () => {
+    scrollRef?.current?.scrollTo({ y: 0, animated: true });
+  };
+  const handleOnScroll = () => {
+    console.log("scroll event fired");
+  };
   return (
     <View
       style={[
@@ -149,7 +156,7 @@ const index = () => {
     >
       <StatusBar barStyle={"dark-content"} />
       <View style={styles.header}>
-        <Pressable>
+        <Pressable onPress={scrollToTop}>
           <Text style={styles.title}>Pixels</Text>
         </Pressable>
         <Pressable onPress={openModal}>
@@ -163,6 +170,9 @@ const index = () => {
       <ScrollView
         contentContainerStyle={{ gap: 15 }}
         showsVerticalScrollIndicator={false}
+        scrollEventThrottle={5}
+        ref={scrollRef}
+        onScroll={handleOnScroll}
       >
         <View style={styles.searchBar}>
           <View style={styles.searchIcon}>
