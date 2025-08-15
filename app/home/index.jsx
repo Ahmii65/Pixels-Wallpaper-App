@@ -1,7 +1,8 @@
 import { Feather, FontAwesome6, Ionicons } from "@expo/vector-icons";
-import { debounce } from "lodash";
+import { capitalize, debounce } from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
   Platform,
   Pressable,
   ScrollView,
@@ -40,6 +41,7 @@ const index = () => {
     page = 1;
     let params = {
       page,
+      ...filters,
     };
     if (category) params.category = category;
     fetchImages(params, false);
@@ -63,14 +65,14 @@ const index = () => {
       page = 1;
       setImages([]);
       setActiveCategory(null);
-      fetchImages({ page, q: text }, false);
+      fetchImages({ page, q: text, ...filters }, false);
     }
     if (text == "") {
       (page = 1),
         searchInputRef?.current.clear(),
         setImages([]),
         setActiveCategory(null);
-      fetchImages({ page }, false);
+      fetchImages({ page, ...filters }, false);
     }
   };
   const clearSearh = () => {
@@ -84,16 +86,57 @@ const index = () => {
     filterModalRef?.current.close();
   };
   const resetFilters = () => {
-    console.log("applying Filters");
     setFilters(null);
+    (page = 1), setImages([]);
+    let params = {
+      page,
+    };
+    if (activeCategory) {
+      params.category = activeCategory;
+    }
+    if (search) {
+      params.q = search;
+    }
+    fetchImages(params, false);
     CloseModal();
   };
   const applyFilters = () => {
-    console.log(`resting filters`);
-    setFilters(null);
+    if (filters) {
+      (page = 1), setImages([]);
+      let params = {
+        page,
+        ...filters,
+      };
+      if (activeCategory) {
+        params.category = activeCategory;
+      }
+      if (search) {
+        params.q = search;
+      }
+      fetchImages(params, false);
+    }
     CloseModal();
   };
   const handleDebounce = useCallback(debounce(handleSearch, 400), []);
+  const RemoveFilter = (filterName) => {
+    let filterz = { ...filters };
+    delete filterz[filterName];
+    setFilters({ ...filterz });
+    page = 1;
+    setImages([]);
+
+    let params = {
+      page,
+      ...filterz,
+    };
+    if (activeCategory) {
+      params.category = activeCategory;
+    }
+    if (search) {
+      params.q = search;
+    }
+    fetchImages(params, false);
+  };
   return (
     <View
       style={[
@@ -146,7 +189,42 @@ const index = () => {
             handleChangeCategory={handleChangeCategory}
           />
         </View>
-        {images.length > 0 && <ImagesGrid images={images} />}
+        {filters && (
+          <View>
+            <ScrollView
+              horizontal
+              contentContainerStyle={styles.filterContainer}
+              showsHorizontalScrollIndicator={false}
+            >
+              {Object.keys(filters).map((key, index) => {
+                const cap = capitalize(filters[key]);
+                return (
+                  <View key={key} style={styles.filterView}>
+                    <Text style={styles.filterText}>{cap}</Text>
+                    <Pressable
+                      style={styles.filterPress}
+                      onPress={() => RemoveFilter(key)}
+                    >
+                      <Ionicons
+                        name="close"
+                        size={14}
+                        color={"rgba(10,10,10,0.5)"}
+                        style={styles.filterIcon}
+                      />
+                    </Pressable>
+                  </View>
+                );
+              })}
+            </ScrollView>
+          </View>
+        )}
+        <View>{images.length > 0 && <ImagesGrid images={images} />}</View>
+        {/* Indicator  */}
+        <View
+          style={{ marginTop: images.length > 0 ? 10 : 70, marginBottom: 20 }}
+        >
+          <ActivityIndicator size={"large"} />
+        </View>
       </ScrollView>
       <FilterModal
         filterModalRef={filterModalRef}
@@ -202,5 +280,33 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(10,10,10,0.1 )",
     padding: 8,
     borderRadius: 10,
+  },
+  filterContainer: {
+    paddingHorizontal: wpp(4),
+    gap: 8,
+  },
+  filterView: {
+    borderWidth: 1,
+    flexDirection: "row",
+    padding: 12,
+    borderRadius: 16,
+    borderColor: "#e5e5e5",
+    backgroundColor: "rgba(10,10,10,0.1)",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 15,
+  },
+  filterText: {
+    fontSize: hpp(1.8),
+    fontWeight: "500",
+  },
+  filterPress: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  filterIcon: {
+    padding: 5,
+    backgroundColor: "rgba(10,10,10,0.1)",
+    borderRadius: 8,
   },
 });

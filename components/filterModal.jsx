@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   ButtonsContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingTop: hpp(2),
+    paddingTop: hpp(5),
     paddingHorizontal: wpp(2),
     alignItems: "center",
     gap: 10,

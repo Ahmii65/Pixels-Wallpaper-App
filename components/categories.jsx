@@ -1,3 +1,4 @@
+import { capitalize } from "lodash";
 import { FlatList, Pressable, StyleSheet, Text } from "react-native";
 import Animated, { FadeInRight } from "react-native-reanimated";
 import {
@@ -6,11 +7,12 @@ import {
 } from "react-native-responsive-screen";
 import { data } from "../constants/data";
 const Categories = ({ activeCategory, handleChangeCategory }) => {
+  let categoriess = data.categories.map((cat) => capitalize(cat));
   return (
     <FlatList
       horizontal
       contentContainerStyle={styles.flatListContainer}
-      data={data.categories}
+      data={categoriess}
       showsHorizontalScrollIndicator={false}
       keyExtractor={(item) => item}
       renderItem={({ item, index }) => {
