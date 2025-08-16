@@ -7,12 +7,11 @@ import {
 } from "react-native-responsive-screen";
 import { data } from "../constants/data";
 const Categories = ({ activeCategory, handleChangeCategory }) => {
-  let categoriess = data.categories.map((cat) => capitalize(cat));
   return (
     <FlatList
       horizontal
       contentContainerStyle={styles.flatListContainer}
-      data={categoriess}
+      data={data.categories}
       showsHorizontalScrollIndicator={false}
       keyExtractor={(item) => item}
       renderItem={({ item, index }) => {
@@ -37,7 +36,7 @@ const Categories = ({ activeCategory, handleChangeCategory }) => {
                   { color: isActive ? "white" : "rgba(10,10,10,0.8)" },
                 ]}
               >
-                {item}
+                {capitalize(item)}
               </Text>
             </Pressable>
           </Animated.View>

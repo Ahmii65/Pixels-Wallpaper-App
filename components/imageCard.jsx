@@ -1,5 +1,5 @@
 import { Image } from "expo-image";
-import { Pressable, StyleSheet } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, View } from "react-native";
 import { widthPercentageToDP as wpp } from "react-native-responsive-screen";
 import { getImageSize } from "../helpers/common";
 

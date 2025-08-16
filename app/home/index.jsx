@@ -2,7 +2,6 @@ import { Feather, FontAwesome6, Ionicons } from "@expo/vector-icons";
 import { capitalize, debounce } from "lodash";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
   Platform,
   Pressable,
   ScrollView,
@@ -31,6 +30,8 @@ const index = () => {
   const [activeCategory, setActiveCategory] = useState(null);
   const [images, setImages] = useState([]);
   const [filters, setFilters] = useState(null);
+  const [isEndReached, setIsEndReached] = useState(false);
+  const [loading, setLoading] = useState(true);
   const searchInputRef = useRef(null);
   const filterModalRef = useRef(null);
   const scrollRef = useRef(null);
@@ -50,11 +51,11 @@ const index = () => {
   useEffect(() => {
     fetchImages();
   }, []);
-  const fetchImages = async (params = { page: 1 }, append = false) => {
+  const fetchImages = async (params = { page: 1 }, append = true) => {
     const res = await apicall(params);
     if (res.success && res?.data?.hits) {
       if (append) {
-        setImages([images, ...res.data.hits]);
+        setImages([...images, ...res.data.hits]);
       } else {
         setImages([...res.data.hits]);
       }
@@ -136,13 +137,33 @@ const index = () => {
     if (search) {
       params.q = search;
     }
-    fetchImages(params, false);
+    fetchImages(params);
   };
   const scrollToTop = () => {
-    scrollRef?.current?.scrollTo({ y: 0, animated: true });
+    scrollRef?.current?.scrollToOffset({ offset: 0, animated: true });
   };
-  const handleOnScroll = () => {
-    console.log("scroll event fired");
+  const handleOnScroll = (event) => {
+    const contentHeight = event.nativeEvent.contentSize.height;
+    const scrollViewHeight = event.nativeEvent.layoutMeasurement.height;
+    const scrollOffset = event.nativeEvent.contentOffset.y;
+    const bottomPosition = contentHeight - scrollViewHeight;
+    if (scrollOffset >= bottomPosition - 1) {
+      if (!isEndReached) {
+        setIsEndReached(true);
+        ++page;
+        let params = {
+          page,
+          ...filters,
+        };
+        if (activeCategory) {
+          params.category = activeCategory;
+        }
+        if (search) {
+          params.q = search;
+        }
+        fetchImages(params, true);
+      } else if (isEndReached) setIsEndReached(false);
+    }
   };
   return (
     <View
@@ -167,75 +188,68 @@ const index = () => {
           />
         </Pressable>
       </View>
-      <ScrollView
-        contentContainerStyle={{ gap: 15 }}
-        showsVerticalScrollIndicator={false}
-        scrollEventThrottle={5}
-        ref={scrollRef}
-        onScroll={handleOnScroll}
-      >
-        <View style={styles.searchBar}>
-          <View style={styles.searchIcon}>
-            <Feather name="search" size={24} color={"rgba(10,10,10,0.4)"} />
-          </View>
-          <TextInput
-            placeholder="Search for Photos..."
-            onChangeText={handleDebounce}
-            style={styles.input}
-            ref={searchInputRef}
-          />
-          {search && (
-            <Pressable
-              style={styles.closeIcon}
-              onPress={() => handleSearch("")}
-            >
-              <Ionicons name="close" size={24} color={"rgba(10,10,10,0.5)"} />
-            </Pressable>
-          )}
+      <View style={styles.searchBar}>
+        <View style={styles.searchIcon}>
+          <Feather name="search" size={24} color={"rgba(10,10,10,0.4)"} />
         </View>
-        <View style={styles.categories}>
-          <Categories
-            activeCategory={activeCategory}
-            handleChangeCategory={handleChangeCategory}
-          />
-        </View>
-        {filters && (
-          <View>
-            <ScrollView
-              horizontal
-              contentContainerStyle={styles.filterContainer}
-              showsHorizontalScrollIndicator={false}
-            >
-              {Object.keys(filters).map((key, index) => {
-                const cap = capitalize(filters[key]);
-                return (
-                  <View key={key} style={styles.filterView}>
-                    <Text style={styles.filterText}>{cap}</Text>
-                    <Pressable
-                      style={styles.filterPress}
-                      onPress={() => RemoveFilter(key)}
-                    >
-                      <Ionicons
-                        name="close"
-                        size={14}
-                        color={"rgba(10,10,10,0.5)"}
-                        style={styles.filterIcon}
-                      />
-                    </Pressable>
-                  </View>
-                );
-              })}
-            </ScrollView>
-          </View>
+        <TextInput
+          placeholder="Search for Photos..."
+          onChangeText={handleDebounce}
+          style={styles.input}
+          ref={searchInputRef}
+        />
+        {search && (
+          <Pressable style={styles.closeIcon} onPress={() => handleSearch("")}>
+            <Ionicons name="close" size={24} color={"rgba(10,10,10,0.5)"} />
+          </Pressable>
         )}
-        <View>{images.length > 0 && <ImagesGrid images={images} />}</View>
-        {/* Indicator  */}
-        <View
-          style={{ marginTop: images.length > 0 ? 10 : 70, marginBottom: 20 }}
-        >
-          <ActivityIndicator size={"large"} />
+      </View>
+      <View style={styles.categories}>
+        <Categories
+          activeCategory={activeCategory}
+          handleChangeCategory={handleChangeCategory}
+        />
+      </View>
+      {filters && (
+        <View>
+          <ScrollView
+            horizontal
+            contentContainerStyle={styles.filterContainer}
+            showsHorizontalScrollIndicator={false}
+          >
+            {Object.keys(filters).map((key, index) => {
+              const cap = capitalize(filters[key]);
+              return (
+                <View key={key} style={styles.filterView}>
+                  <Text style={styles.filterText}>{cap}</Text>
+                  <Pressable
+                    style={styles.filterPress}
+                    onPress={() => RemoveFilter(key)}
+                  >
+                    <Ionicons
+                      name="close"
+                      size={14}
+                      color={"rgba(10,10,10,0.5)"}
+                      style={styles.filterIcon}
+                    />
+                  </Pressable>
+                </View>
+              );
+            })}
+          </ScrollView>
         </View>
-      </ScrollView>
+      )}
+      <View style={{ flex: 1 }}>
+        {images.length > 0 && (
+          <ImagesGrid
+            images={images}
+            scrollRef={scrollRef}
+            handleOnScroll={handleOnScroll}
+            loading={loading}
+            setLoading={setLoading}
+          />
+        )}
+      </View>
       <FilterModal
         filterModalRef={filterModalRef}
         filters={filters}
@@ -253,7 +267,7 @@ export default index;
 const styles = StyleSheet.create({
   contsainer: {
     flex: 1,
-    gap: 15,
+    gap: 12,
   },
   header: {
     flexDirection: "row",
@@ -298,7 +312,7 @@ const styles = StyleSheet.create({
   filterView: {
     borderWidth: 1,
     flexDirection: "row",
-    padding: 12,
+    padding: 8,
     borderRadius: 16,
     borderColor: "#e5e5e5",
     backgroundColor: "rgba(10,10,10,0.1)",
